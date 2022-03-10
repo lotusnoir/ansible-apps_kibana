@@ -1,6 +1,7 @@
 ---
 kibana_version: "7.x"
 kibana_version_else: "7.10.0"
+kibana_force_install: false
 
 kibana_package: kibana
 
