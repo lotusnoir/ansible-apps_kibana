@@ -1,44 +1,49 @@
 ---
 - name: "Check for kibana folder"
-  stat:
+  ansible.builtin.stat:
     path: '/usr/share/kibana/'
   changed_when: false
   register: kibana_install
 
-- when: not kibana_install.stat.exists or kibana_force_install
+- name: "Install tasks"
+  when: not kibana_install.stat.exists or kibana_force_install
   block:
-    - name: Ensure dependencies are installed.
-      package:
-        name:
-          - apt-transport-https
-          - gnupg2
+    - name: "DEBIAN | Ensure dependencies are installed."
+      ansible.builtin.package:
+        name: apt-transport-https
+        state: present
+      when: ansible_os_family == 'Debian'
+
+    - name: "ALL | Ensure dependencies are installed."
+      ansible.builtin.package:
+        name: gnupg2
         state: present
 
-    - name: Add Elasticsearch apt key.
-      apt_key:
+    - name: "Add Elasticsearch apt key."
+      ansible.builtin.apt_key:
         url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
         state: present
 
-    - name: Add Kibana repository.
-      apt_repository:
+    - name: "Add Kibana repository."
+      ansible.builtin.apt_repository:
         repo: 'deb https://artifacts.elastic.co/packages/{{ kibana_version }}/apt stable main'
         state: present
         update_cache: true
 
-    - name: Install Kibana.
-      package:
+    - name: "Install Kibana."
+      ansible.builtin.package:
         name: "{{ kibana_package }}={{ kibana_version_else }}"
         state: present
         force: "yes"
 
-    - name: Ensure Kibana is started and enabled at boot.
-      service:
+    - name: "Ensure Kibana is started and enabled at boot."
+      ansible.builtin.service:
         name: kibana
         state: started
         enabled: true
 
-- name: Copy Kibana configuration.
-  template:
+- name: "Copy Kibana configuration."
+  ansible.builtin.template:
     src: "{{ kibana_config_template }}"
     dest: "{{ kibana_config_file_path }}"
     owner: root
