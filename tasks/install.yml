@@ -12,12 +12,20 @@
       ansible.builtin.package:
         name: apt-transport-https
         state: present
+      register: pkg_result
+      retries: 12
+      delay: 10
+      until: pkg_result is success
       when: ansible_os_family == 'Debian'
 
     - name: "ALL | Ensure dependencies are installed."
       ansible.builtin.package:
         name: gnupg2
         state: present
+      register: pkg_result
+      retries: 12
+      delay: 10
+      until: pkg_result is success
 
     - name: "Add Elasticsearch apt key."
       ansible.builtin.apt_key:
@@ -35,6 +43,10 @@
         name: "{{ kibana_package }}={{ kibana_version_else }}"
         state: present
         force: "yes"
+      register: pkg_result
+      retries: 12
+      delay: 10
+      until: pkg_result is success
 
     - name: "Ensure Kibana is started and enabled at boot."
       ansible.builtin.service:
@@ -48,5 +60,5 @@
     dest: "{{ kibana_config_file_path }}"
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
   notify: Restart kibana
