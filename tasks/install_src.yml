@@ -1,0 +1,64 @@
+---
+- name: "Check for kibana folder"
+  ansible.builtin.stat:
+    path: "{{ kibana_install_dir }}"
+  changed_when: false
+  register: kibana_install
+
+- name: "Install tasks"
+  when: not kibana_install.stat.exists or kibana_force_install
+  block:
+    - name: "Create kibana user"
+      ansible.builtin.user:
+        name: kibana
+        system: true
+        shell: /usr/sbin/nologin
+
+    - name: "Ensure destination directory exists"
+      ansible.builtin.file:
+        path: "{{ kibana_install_dir }}"
+        state: directory
+        owner: kibana
+        group: kibana
+        mode: "0755"
+
+    - name: "Download Kibana tarball"
+      ansible.builtin.get_url:
+        url: "{{ kibana_url_src }}"
+        dest: "/tmp/{{ kibana_tar }}"
+        mode: "0644"
+
+    - name: "Extract Kibana tarball"
+      ansible.builtin.unarchive:
+        src: "/tmp/{{ kibana_tar }}"
+        dest: "{{ kibana_install_dir }}"
+        extra_opts: [--strip-components=1]
+        remote_src: true
+
+    - name: "Create symlink to current Kibana version"
+      ansible.builtin.file:
+        src: "{{ kibana_install_dir }}"
+        dest: "{{ kibana_symlink }}"
+        state: link
+        force: true
+
+    - name: "Change ownership of Kibana directory"
+      ansible.builtin.file:
+        path: "{{ kibana_install_dir }}"
+        owner: kibana
+        group: kibana
+        recurse: true
+
+    - name: "Create systemd"
+      ansible.builtin.template:
+        src: "kibana.service.j2"
+        dest: "/etc/systemd/system/kibana.service"
+        mode: "0640"
+      notify: "Restart kibana"
+
+    - name: "Enable and start Kibana"
+      ansible.builtin.systemd:
+        name: kibana
+        enabled: true
+        daemon_reload: true
+        state: started

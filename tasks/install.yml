@@ -1,64 +1,19 @@
 ---
-- name: "Check for kibana folder"
-  ansible.builtin.stat:
-    path: '/usr/share/kibana/'
-  changed_when: false
-  register: kibana_install
+- name: "Install from sources"
+  ansible.builtin.include_tasks:
+    file: install_src.yml
+  when: kibana_install_method == "src"
 
-- name: "Install tasks"
-  when: not kibana_install.stat.exists or kibana_force_install
-  block:
-    - name: "DEBIAN | Ensure dependencies are installed."
-      ansible.builtin.package:
-        name: apt-transport-https
-        state: present
-      register: pkg_result
-      retries: 12
-      delay: 10
-      until: pkg_result is success
-      when: ansible_os_family == 'Debian'
-
-    - name: "ALL | Ensure dependencies are installed."
-      ansible.builtin.package:
-        name: gnupg2
-        state: present
-      register: pkg_result
-      retries: 12
-      delay: 10
-      until: pkg_result is success
-
-    - name: "Add Elasticsearch apt key."
-      ansible.builtin.apt_key:
-        url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-        state: present
-
-    - name: "Add Kibana repository."
-      ansible.builtin.apt_repository:
-        repo: 'deb https://artifacts.elastic.co/packages/{{ kibana_version }}/apt stable main'
-        state: present
-        update_cache: true
-
-    - name: "Install Kibana."
-      ansible.builtin.package:
-        name: "{{ kibana_package }}={{ kibana_version_else }}"
-        state: present
-        force: "yes"
-      register: pkg_result
-      retries: 12
-      delay: 10
-      until: pkg_result is success
-
-    - name: "Ensure Kibana is started and enabled at boot."
-      ansible.builtin.service:
-        name: kibana
-        state: started
-        enabled: true
+- name: "Install from repo"
+  ansible.builtin.include_tasks:
+    file: install_repo.yml
+  when: kibana_install_method == "repo"
 
 - name: "Copy Kibana configuration."
   ansible.builtin.template:
-    src: "{{ kibana_config_template }}"
+    src: "kibana.yml.j2"
     dest: "{{ kibana_config_file_path }}"
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   notify: Restart kibana

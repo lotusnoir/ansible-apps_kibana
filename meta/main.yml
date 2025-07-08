@@ -14,9 +14,8 @@ galaxy_info:
         - "noble"
     - name: "Debian"
       versions:
-        - "buster"
-        - "bullseye"
         - "bookworm"
+        - "bullseye"
 
   galaxy_tags:
     - kibana

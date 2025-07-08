@@ -1,16 +1,23 @@
 ---
-kibana_version: "7.x"
-kibana_version_else: "7.10.0"
+### INSTALL
+# repo / src
+kibana_install_method: repo
 kibana_force_install: false
+kibana_config_file_path: '{% if "src" in kibana_install_method%}{{ kibana_symlink }}/config/kibana.yml{% else %}/etc/kibana/kibana.yml{% endif %}'
 
-kibana_package: kibana
+### src
+kibana_version: "9.0.3"
+kibana_url_src: "https://artifacts.elastic.co/downloads/kibana/kibana-{{ kibana_version }}-linux-x86_64.tar.gz"
+kibana_tar: "kibana-{{ kibana_version }}-linux-x86_64.tar.gz"
+kibana_install_dir: "/opt/kibana-{{ kibana_version }}"
+kibana_symlink: "/opt/kibana"
 
-kibana_config_template: kibana.yml.j2
-kibana_config_file_path: /etc/kibana/kibana.yml
+### repo
+kibana_major_version: "9.x"
 
-kibana_server_port: 5601
+### CONFIG
+kibana_server_port: 8080
 kibana_server_host: "0.0.0.0"
-
 kibana_elasticsearch_url: "http://localhost:9200"
 kibana_elasticsearch_username: ""
 kibana_elasticsearch_password: ""

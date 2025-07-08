@@ -1,0 +1,14 @@
+[Unit]
+Description=Kibana
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=kibana
+Group=kibana
+ExecStart={{ kibana_symlink }}/bin/kibana
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

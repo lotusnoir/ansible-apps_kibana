@@ -1,0 +1,55 @@
+---
+- name: "Check for kibana folder"
+  ansible.builtin.stat:
+    path: "/usr/share/kibana/"
+  changed_when: false
+  register: kibana_install
+
+- name: "Install tasks"
+  when: not kibana_install.stat.exists or kibana_force_install
+  block:
+    - name: "DEBIAN | Ensure dependencies are installed."
+      ansible.builtin.package:
+        name: apt-transport-https
+        state: present
+      register: pkg_result
+      retries: 12
+      delay: 10
+      until: pkg_result is success
+      when: ansible_os_family == 'Debian'
+
+    - name: "ALL | Ensure dependencies are installed."
+      ansible.builtin.package:
+        name: gnupg2
+        state: present
+      register: pkg_result
+      retries: 12
+      delay: 10
+      until: pkg_result is success
+
+    - name: "DEBIAN | Add Elasticsearch apt key."
+      ansible.builtin.apt_key:
+        url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+        state: present
+
+    - name: "DEBIAN | Add Kibana repository."
+      ansible.builtin.apt_repository:
+        repo: "deb https://artifacts.elastic.co/packages/{{ kibana_major_version }}/apt stable main"
+        state: present
+        update_cache: true
+
+    - name: "Install Kibana."
+      ansible.builtin.package:
+        name: "kibana"
+        state: present
+        force: "yes"
+      register: pkg_result
+      retries: 12
+      delay: 10
+      until: pkg_result is success
+
+    - name: "Ensure Kibana is started and enabled"
+      ansible.builtin.service:
+        name: kibana
+        state: started
+        enabled: true
