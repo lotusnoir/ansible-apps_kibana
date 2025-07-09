@@ -102,22 +102,27 @@ elasticsearch.password: "{{ kibana_elasticsearch_password }}"
 #pid.file: /var/run/kibana.pid
 
 # Enables you specify a file where Kibana stores log output.
-#logging.dest: stdout
+#logging.dest: {{ kibana_logging_dest }}
 
+{% if kibana_logging_output == "silent" %}
 # Set the value of this setting to true to suppress all logging output.
-#logging.silent: false
-
+logging.silent: true
+{% elif kibana_logging_output == "quiet" %}
 # Set the value of this setting to true to suppress all logging output other than error messages.
-#logging.quiet: false
-
+logging.quiet: true
+{% elif kibana_logging_output == "verbose" %}
 # Set the value of this setting to true to log all events, including system usage information
 # and all requests.
-#logging.verbose: false
+logging.verbose: true
+{% endif %}
 
 # Set the interval in milliseconds to sample system and process performance
 # metrics. Minimum is 100ms. Defaults to 5000.
-#ops.interval: 5000
+ops.interval: {{ kibana_ops_interval }}
 
 # The default locale. This locale can be used in certain circumstances to substitute any missing
 # translations.
 #i18n.defaultLocale: "en"
+{% if kibana_extra_config is defined and kibana_extra_config | length > 0 %}
+{{ kibana_extra_config }}
+{% endif %}

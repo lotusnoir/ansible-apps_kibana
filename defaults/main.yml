@@ -21,3 +21,14 @@ kibana_server_host: "0.0.0.0"
 kibana_elasticsearch_url: "http://localhost:9200"
 kibana_elasticsearch_username: ""
 kibana_elasticsearch_password: ""
+kibana_extra_config:
+  ""
+  #  csp.strict: false
+  #  server.securityResponseHeaders.strictTransportSecurity: "max-age=31536000"
+  #  server.securityResponseHeaders.disableEmbedding: true
+
+kibana_ops_interval: 5000
+
+kibana_logging_dest: stdout
+## silent / quiet / verbose
+kibana_logging_output: "verbose"
