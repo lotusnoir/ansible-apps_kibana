@@ -3,7 +3,7 @@
 # repo / src
 kibana_install_method: repo
 kibana_force_install: false
-kibana_config_file_path: '{% if "src" in kibana_install_method%}{{ kibana_symlink }}/config/kibana.yml{% else %}/etc/kibana/kibana.yml{% endif %}'
+kibana_config_file_path: '{% if "src" in kibana_install_method %}{{ kibana_symlink }}/config/kibana.yml{% else %}/etc/kibana/kibana.yml{% endif %}'
 
 ### src
 kibana_version: "9.0.3"
@@ -29,6 +29,17 @@ kibana_extra_config:
 
 kibana_ops_interval: 5000
 
-kibana_logging_dest: stdout
-## silent / quiet / verbose
-kibana_logging_output: "verbose"
+kibana_logging_level: "info"  # Niveau global : all, trace, debug, info, warn, error, fatal, off
+kibana_logging_appenders:
+  rolling:
+    type: rolling-file
+    fileName: /var/log/kibana/kibana.log
+    policy:
+      type: size-limit
+      size: 20mb
+    layout:
+      type: json  # ou "pattern"
+kibana_logging_loggers:
+  - name: plugins.fleet
+    level: debug
+    appenders: "[default]"

@@ -50,9 +50,6 @@ elasticsearch.hosts: {{ kibana_elasticsearch_url }}
 {% if kibana_elasticsearch_username and kibana_elasticsearch_password %}
 elasticsearch.username: "{{ kibana_elasticsearch_username }}"
 elasticsearch.password: "{{ kibana_elasticsearch_password }}"
-{% else %}
-#elasticsearch.username: "user"
-#elasticsearch.password: "pass"
 {% endif %}
 
 # Enables SSL and paths to the PEM-format SSL certificate and SSL key files, respectively.
@@ -95,26 +92,18 @@ elasticsearch.password: "{{ kibana_elasticsearch_password }}"
 # Time in milliseconds to wait for Elasticsearch at Kibana startup before retrying.
 #elasticsearch.startupTimeout: 5000
 
-# Logs queries sent to Elasticsearch. Requires logging.verbose set to true.
-#elasticsearch.logQueries: false
-
-# Specifies the path where Kibana creates the process ID file.
-#pid.file: /var/run/kibana.pid
-
-# Enables you specify a file where Kibana stores log output.
-#logging.dest: {{ kibana_logging_dest }}
-
-{% if kibana_logging_output == "silent" %}
-# Set the value of this setting to true to suppress all logging output.
-logging.silent: true
-{% elif kibana_logging_output == "quiet" %}
-# Set the value of this setting to true to suppress all logging output other than error messages.
-logging.quiet: true
-{% elif kibana_logging_output == "verbose" %}
-# Set the value of this setting to true to log all events, including system usage information
-# and all requests.
-logging.verbose: true
-{% endif %}
+logging:
+  root:
+    level: {{ kibana_logging_level }}
+    appenders: [rolling]
+{% if kibana_logging_appenders is defined and kibana_logging_appenders | length > 0 %}
+  appenders:
+    {{ kibana_logging_appenders | to_nice_yaml(indent=2) | indent(4) }}
+{% endif -%}
+{% if kibana_logging_loggers is defined and kibana_logging_loggers | length > 0 %}
+  loggers:
+    {{ kibana_logging_loggers | to_nice_yaml(indent=2) | indent(4) }}
+{% endif -%}
 
 # Set the interval in milliseconds to sample system and process performance
 # metrics. Minimum is 100ms. Defaults to 5000.
